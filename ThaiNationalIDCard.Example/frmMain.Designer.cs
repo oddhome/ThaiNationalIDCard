@@ -64,14 +64,16 @@
             this.tb_org_name = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.cb_member_type = new System.Windows.Forms.ComboBox();
+            this.btnExportExcel = new System.Windows.Forms.Button();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // btnRefreshReaderList
             // 
-            this.btnRefreshReaderList.Location = new System.Drawing.Point(615, 4);
+            this.btnRefreshReaderList.Location = new System.Drawing.Point(615, 89);
             this.btnRefreshReaderList.Name = "btnRefreshReaderList";
-            this.btnRefreshReaderList.Size = new System.Drawing.Size(107, 23);
+            this.btnRefreshReaderList.Size = new System.Drawing.Size(107, 32);
             this.btnRefreshReaderList.TabIndex = 56;
             this.btnRefreshReaderList.Text = "Refresh reader list";
             this.btnRefreshReaderList.UseVisualStyleBackColor = true;
@@ -105,7 +107,7 @@
             this.btnReadWithPhoto.ForeColor = System.Drawing.Color.White;
             this.btnReadWithPhoto.Location = new System.Drawing.Point(502, 89);
             this.btnReadWithPhoto.Name = "btnReadWithPhoto";
-            this.btnReadWithPhoto.Size = new System.Drawing.Size(220, 32);
+            this.btnReadWithPhoto.Size = new System.Drawing.Size(107, 32);
             this.btnReadWithPhoto.TabIndex = 53;
             this.btnReadWithPhoto.Text = "Read Card";
             this.btnReadWithPhoto.UseVisualStyleBackColor = false;
@@ -291,7 +293,7 @@
             this.btn_delete_project.ForeColor = System.Drawing.Color.White;
             this.btn_delete_project.Location = new System.Drawing.Point(377, 4);
             this.btn_delete_project.Name = "btn_delete_project";
-            this.btn_delete_project.Size = new System.Drawing.Size(119, 23);
+            this.btn_delete_project.Size = new System.Drawing.Size(99, 23);
             this.btn_delete_project.TabIndex = 70;
             this.btn_delete_project.Text = "Delete Project";
             this.btn_delete_project.UseVisualStyleBackColor = false;
@@ -377,11 +379,27 @@
             this.cb_member_type.Size = new System.Drawing.Size(148, 21);
             this.cb_member_type.TabIndex = 74;
             // 
+            // btnExportExcel
+            // 
+            this.btnExportExcel.Enabled = false;
+            this.btnExportExcel.Location = new System.Drawing.Point(615, 4);
+            this.btnExportExcel.Name = "btnExportExcel";
+            this.btnExportExcel.Size = new System.Drawing.Size(107, 23);
+            this.btnExportExcel.TabIndex = 75;
+            this.btnExportExcel.Text = "Export Excel";
+            this.btnExportExcel.UseVisualStyleBackColor = true;
+            this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(891, 495);
+            this.Controls.Add(this.btnExportExcel);
             this.Controls.Add(this.cb_member_type);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -454,5 +472,7 @@
         private System.Windows.Forms.TextBox tb_org_name;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox cb_member_type;
+        private System.Windows.Forms.Button btnExportExcel;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
     }
 }

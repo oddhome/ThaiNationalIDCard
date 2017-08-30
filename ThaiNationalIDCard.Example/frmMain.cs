@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Data;
 using System.Data.OleDb;
 using System.Drawing.Imaging;
 using System.Net.NetworkInformation;
@@ -15,6 +14,7 @@ using System.Net.Sockets;
 using System.Collections.Specialized;
 using System.Net;
 using System.IO;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ThaiNationalIDCard.Example
 {
@@ -298,6 +298,11 @@ namespace ThaiNationalIDCard.Example
             if (cb_tt_project_id.Items.Count > 0)
             {
                 cb_tt_project_id.SelectedIndex = 0;
+                btnExportExcel.Enabled = true;
+            }
+            else
+            {
+                btnExportExcel.Enabled = false;
             }
         }
 
@@ -388,30 +393,50 @@ namespace ThaiNationalIDCard.Example
 
             OleDbCommand sql = new OleDbCommand();
             sql.CommandType = CommandType.Text;
-            sql.CommandText = "INSERT INTO tbl_tt_members ([tt_project_id],[pid],[birthday],[sex],[th_title],[th_fname],[th_lname],[en_title],[en_fname],[en_lname],[issue],[expire],[address],[address_number],[address_moo],[address_lane],[address_road],[address_tambon],[address_amphur],[address_province]) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
-            sql.Parameters.AddWithValue("@tt_project_id", cb_tt_project_id.Text);
-            sql.Parameters.AddWithValue("@pid", personal.Citizenid);
-            sql.Parameters.AddWithValue("@birthday", personal.Birthday.ToString("yyyy-MM-dd"));
-            sql.Parameters.AddWithValue("@sex", personal.Sex);
-            sql.Parameters.AddWithValue("@th_title", personal.Th_Prefix);
-            sql.Parameters.AddWithValue("@th_fname", personal.Th_Firstname);
-            sql.Parameters.AddWithValue("@th_lname", personal.Th_Lastname);
-            sql.Parameters.AddWithValue("@en_title", personal.En_Prefix);
-            sql.Parameters.AddWithValue("@en_fname", personal.En_Firstname);
-            sql.Parameters.AddWithValue("@en_lname", personal.En_Lastname);
-            sql.Parameters.AddWithValue("@issue", personal.Issue.ToString("yyyy-MM-dd"));
-            sql.Parameters.AddWithValue("@expire", personal.Expire.ToString("yyyy-MM-dd"));
-            sql.Parameters.AddWithValue("@address", personal.Address);
-            sql.Parameters.AddWithValue("@address_number", personal.addrHouseNo);
-            sql.Parameters.AddWithValue("@address_moo", personal.addrVillageNo);
-            sql.Parameters.AddWithValue("@address_lane", personal.addrLane);
-            sql.Parameters.AddWithValue("@address_road", personal.addrRoad);
-            sql.Parameters.AddWithValue("@address_tambon", personal.addrTambol);
-            sql.Parameters.AddWithValue("@address_amphur", personal.addrAmphur);
-            sql.Parameters.AddWithValue("@address_province", personal.addrProvince);
+            sql.CommandText = "INSERT INTO tbl_tt_members (tt_project_id,pid,birthday,sex,th_title,th_fname,th_lname,en_title,en_fname,en_lname,issue,expire,address,address_number,address_moo,address_lane,address_road,address_tambon,address_amphur,address_province) VALUES ('" +
+                cb_tt_project_id.Text + "','" +
+                personal.Citizenid + "','";
+            try
+            {
+                sql.CommandText = sql.CommandText + personal.Birthday.ToString("yyyy-MM-dd") + "',";
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("{0} Exception caught.", e);
+                sql.CommandText = sql.CommandText + personal.Issue.ToString("yyyy-MM-dd") + "','";
+            }
+            
+            sql.CommandText = sql.CommandText +
+                personal.Sex + ",'" +
+                personal.Th_Prefix + "','" +
+                personal.Th_Firstname + "','" +
+                personal.Th_Lastname + "','" +
+                personal.En_Prefix + "','" +
+                personal.En_Firstname + "','" +
+                personal.En_Lastname + "','" +
+                personal.Issue.ToString("yyyy-MM-dd") + "','";
+            try
+            {
+                sql.CommandText = sql.CommandText + personal.Expire.ToString("yyyy-MM-dd") + "','";
+            }
+            catch ( Exception e )
+            {
+                Console.WriteLine("{0} Exception caught.", e);
+                sql.CommandText = sql.CommandText + personal.Issue.ToString("yyyy-MM-dd") + "','";
+            }
+            sql.CommandText = sql.CommandText +
+                personal.Address + "','" +
+                personal.addrHouseNo + "','" +
+                personal.addrVillageNo + "','" +
+                personal.addrLane + "','" +
+                personal.addrRoad + "','" +
+                personal.addrTambol + "','" +
+                personal.addrAmphur + "','" +
+                personal.addrProvince + "');";
 
             sql.Connection = myAccessConn;
             myAccessConn.Open();
+            Console.WriteLine(sql.CommandText);
             sql.ExecuteNonQuery();
             myAccessConn.Close();
 
@@ -1004,7 +1029,97 @@ namespace ThaiNationalIDCard.Example
             cb_member_type.Enabled = false;
             btn_save_mobile.Enabled = false;
         }
-        
+
+        private void btnExportExcel_Click(object sender, EventArgs e)
+        {
+            string tt_project_id = cb_tt_project_id.Text;
+            //Connect to DB
+            OleDbConnection myAccessConn = null;
+            try
+            {
+                myAccessConn = new OleDbConnection(dbTT.strAccessConn);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: Failed to create a database connection. \n{0}", ex.Message);
+                return;
+            }
+
+
+            //Query
+            string strAccessSelect = "SELECT * FROM tbl_tt_members WHERE tt_project_id = '" + tt_project_id + "' ORDER BY ID DESC";
+
+            // Create the dataset and add the Categories table to it:
+            DataSet myDataSet = new DataSet();
+
+            try
+            {
+
+                OleDbCommand myAccessCommand = new OleDbCommand(strAccessSelect, myAccessConn);
+                OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(myAccessCommand);
+
+                myAccessConn.Open();
+                myDataAdapter.Fill(myDataSet, "Members");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: Failed to retrieve the required data from the DataBase.\n{0}", ex.Message);
+                return;
+            }
+            finally
+            {
+                myAccessConn.Close();
+            }
+
+            // A dataset can contain multiple tables, so let's get them
+            // all into an array:
+            DataTableCollection dta = myDataSet.Tables;
+            DataColumnCollection drc = myDataSet.Tables["Members"].Columns;
+            DataRowCollection dra = myDataSet.Tables["Members"].Rows;
+
+
+           
+            try
+            {
+                int iCol = 1;
+                int iRow = 1;
+                int i;
+                var excelDoc = new Excel.Application();
+                excelDoc.Visible = true;
+                excelDoc.Workbooks.Add();
+                Excel._Worksheet wksht = (Excel.Worksheet)excelDoc.ActiveSheet;
+                
+                foreach (DataColumn dc in drc)
+                {
+                    wksht.Cells[iRow, iCol] = dc.ColumnName;
+                    iCol++;
+                }
+                iRow++;
+                
+                foreach (DataRow dr in dra)
+                {
+                    iCol = 1;
+                    for (i = 0; i < drc.Count; i++)
+                    {
+                        Console.WriteLine(dr[i].ToString());
+                        wksht.Cells[iRow, iCol] = dr[i].ToString();
+                        iCol++;
+                    }
+                    iRow++;
+                }
+
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private void saveFileDialog1_FileOk(object sender, CancelEventArgs e)
+        {
+
+        }
     }
 
     public static class dbTT
