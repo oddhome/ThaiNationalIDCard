@@ -719,7 +719,7 @@ namespace ThaiNationalIDCard.Example
             foreach (DataRow dr in dra)
             {
                 //Send to Server
-                String url = "https://www.nnr.nstda.or.th/portal/rtap_project/save_id_card/" + cb_tt_project_id.Text + "/" + dr["pid"];
+                String url = "https://www.nnr.nstda.or.th/agritec_portal/tt_project/save_id_card/" + cb_tt_project_id.Text + "/" + dr["pid"];
                 String Response;
                 Response = postHtml(url, "birthday", dr["birthday"].ToString());
                 Response = postHtml(url, "sex", dr["sex"].ToString());
@@ -748,7 +748,7 @@ namespace ThaiNationalIDCard.Example
                 //save picture
                 String picture_name = dr["pid"].ToString() + ".jpg";
 
-                url = "https://www.nnr.nstda.or.th/portal/namecard/save_id_card_img/" + dr["pid"].ToString();
+                url = "https://www.nnr.nstda.or.th/agritec_portal/tt_project/save_id_card_img/" + dr["pid"].ToString();
                 String[] filename = new string[1] { picture_name };
                 Response = PostMultipleFiles(url, filename);
             }
@@ -813,15 +813,24 @@ namespace ThaiNationalIDCard.Example
         private String postHtml(string url, string field_name, string field_value)
         {
             url = url + "/" + field_name;
-            NameValueCollection data = new NameValueCollection();
-            data["field_value"] = field_value;
-            //data.Add("field_name", field_value);
-            WebClient webClient = new WebClient();
+            string myParameters = "field_value=" + field_value;
             try
             {
-                byte[] responseBytes = webClient.UploadValues(url, data);
-                string response = Encoding.UTF8.GetString(responseBytes);
-                return response;
+                WebRequest request = WebRequest.Create(url);
+                request.Method = "POST";
+                byte[] byteArray = Encoding.UTF8.GetBytes(myParameters);
+                request.ContentType = "application/x-www-form-urlencoded";
+                request.ContentLength = byteArray.Length;
+                Stream dataStream = request.GetRequestStream();
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                dataStream.Close();
+
+                WebResponse response = request.GetResponse();
+                Console.WriteLine(((HttpWebResponse)response).StatusDescription);
+                //using (HttpClient client = new HttpClient());
+
+                //Console.WriteLine(HtmlResult);
+                return ((HttpWebResponse)response).StatusDescription;
             }
             catch (Exception e)
             {
